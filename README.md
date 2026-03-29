@@ -42,7 +42,7 @@ Details in [docs/v0-plan.md](docs/v0-plan.md) and [docs/design.md](docs/design.m
 
 ## Setup
 
-- Python 3.14+
+- Python 3.10+
 - [Norns](https://github.com/amackera/norns) running locally (`docker compose up`)
 - `ANTHROPIC_API_KEY`
 
