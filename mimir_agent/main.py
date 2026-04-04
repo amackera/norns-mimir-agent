@@ -5,12 +5,12 @@ import uuid
 
 from norns.client import Norns
 
-from mimir import config, db
-from mimir.worker import agent
-from mimir.discord_bot import bot
+from mimir_agent import config, db
+from mimir_agent.worker import agent
+from mimir_agent.discord_bot import bot
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(name)s %(message)s")
-logger = logging.getLogger("mimir")
+logger = logging.getLogger("mimir_agent")
 
 
 async def run_worker():
@@ -34,7 +34,7 @@ def run_slack():
             return
 
         from slack_bolt.adapter.socket_mode import SocketModeHandler
-        from mimir.slack_bot import app
+        from mimir_agent.slack_bot import app
 
         logger.info("Starting Slack bot")
         handler = SocketModeHandler(app, config.SLACK_APP_TOKEN)

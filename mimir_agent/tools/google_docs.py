@@ -2,7 +2,7 @@ import time
 
 from norns import tool
 
-from mimir import config
+from mimir_agent import config
 
 # Simple in-memory cache: {doc_id: (text, timestamp)}
 _doc_cache: dict[str, tuple[str, float]] = {}

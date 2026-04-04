@@ -1,4 +1,4 @@
-# Mimir
+# norns-mimir-agent
 
 Product knowledge agent on [Norns](https://github.com/amackera/norns). Ask it how features work, when things ship, how to flip a flag — it searches your docs and remembers what you tell it.
 
@@ -16,7 +16,7 @@ NornsClient.send_message() ──────────► Norns Server (orche
                                             │
                                             │ dispatches tasks
                                             ▼
-                                      Mimir Worker (Python)
+                                      Mimir Agent Worker (Python)
                                         ├── LLM calls (Anthropic)
                                         └── Tool execution
                                              ├── search_knowledge

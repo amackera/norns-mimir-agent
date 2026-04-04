@@ -2,7 +2,7 @@ from github import Github, GithubException
 
 from norns import tool
 
-from mimir import config
+from mimir_agent import config
 
 
 def _get_client() -> Github:

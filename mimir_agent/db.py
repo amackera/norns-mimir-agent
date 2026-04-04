@@ -1,6 +1,6 @@
 import psycopg2
 
-from mimir import config
+from mimir_agent import config
 
 _conn = None
 

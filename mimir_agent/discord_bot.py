@@ -6,10 +6,10 @@ import discord
 
 from norns import NornsClient
 
-from mimir import config
+from mimir_agent import config
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(name)s %(message)s")
-logger = logging.getLogger("mimir.discord")
+logger = logging.getLogger("mimir_agent.discord")
 
 intents = discord.Intents.default()
 intents.message_content = True
@@ -60,7 +60,7 @@ async def on_message(message: discord.Message):
         result = await asyncio.get_event_loop().run_in_executor(
             None,
             lambda: norns_client.send_message(
-                "mimir",
+                "mimir-agent",
                 text,
                 conversation_key=conversation_key,
                 wait=True,

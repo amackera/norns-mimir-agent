@@ -21,4 +21,4 @@ GOOGLE_CREDENTIALS_PATH = os.environ.get("GOOGLE_CREDENTIALS_PATH", "")
 GOOGLE_DOC_IDS = [d.strip() for d in os.environ.get("GOOGLE_DOC_IDS", "").split(",") if d.strip()]
 
 # Database
-DATABASE_URL = os.environ.get("DATABASE_URL", "postgresql://localhost:5432/mimir")
+DATABASE_URL = os.environ.get("DATABASE_URL", "postgresql://localhost:5432/mimir_agent")

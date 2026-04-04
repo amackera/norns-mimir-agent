@@ -1,6 +1,6 @@
 from norns import tool
 
-from mimir import db
+from mimir_agent import db
 
 
 @tool(side_effect=True)

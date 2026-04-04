@@ -2,8 +2,8 @@ import logging
 
 from norns import Norns, Agent
 
-from mimir import config
-from mimir.tools import all_tools
+from mimir_agent import config
+from mimir_agent.tools import all_tools
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(name)s %(message)s")
 
@@ -24,7 +24,7 @@ When answering questions:
 """
 
 agent = Agent(
-    name="mimir",
+    name="mimir-agent",
     model="claude-sonnet-4-20250514",
     system_prompt=SYSTEM_PROMPT,
     tools=all_tools,
@@ -35,7 +35,7 @@ agent = Agent(
 
 
 def main():
-    from mimir import db
+    from mimir_agent import db
     db.init()
 
     norns = Norns(config.NORNS_URL, api_key=config.NORNS_API_KEY)

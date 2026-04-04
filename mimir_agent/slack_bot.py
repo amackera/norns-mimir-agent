@@ -6,10 +6,10 @@ from slack_bolt.adapter.socket_mode import SocketModeHandler
 
 from norns import NornsClient
 
-from mimir import config
+from mimir_agent import config
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(name)s %(message)s")
-logger = logging.getLogger("mimir.slack")
+logger = logging.getLogger("mimir_agent.slack")
 
 app = App(token=config.SLACK_BOT_TOKEN)
 norns_client = NornsClient(config.NORNS_URL, api_key=config.NORNS_API_KEY)
@@ -84,7 +84,7 @@ def _handle(body, say, client):
 
     try:
         result = norns_client.send_message(
-            "mimir",
+            "mimir-agent",
             user_text,
             conversation_key=conversation_key,
             wait=True,
