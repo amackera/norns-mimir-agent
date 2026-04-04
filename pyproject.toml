@@ -1,5 +1,5 @@
 [project]
-name = "mimir"
+name = "mimir-agent"
 version = "0.1.0"
 description = "AI Agent for product knowledge built on Norns."
 readme = "README.md"
@@ -16,10 +16,10 @@ dependencies = [
 ]
 
 [project.scripts]
-mimir = "mimir.main:main"
-mimir-worker = "mimir.worker:main"
-mimir-discord = "mimir.discord_bot:main"
-mimir-slack = "mimir.slack_bot:main"
+mimir-agent = "mimir_agent.main:main"
+mimir-worker = "mimir_agent.worker:main"
+mimir-discord = "mimir_agent.discord_bot:main"
+mimir-slack = "mimir_agent.slack_bot:main"
 
 [build-system]
 requires = ["hatchling"]
