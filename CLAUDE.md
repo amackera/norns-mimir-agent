@@ -1,0 +1,68 @@
+# CLAUDE.md
+
+This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+
+## What is Mimir?
+
+Mimir is a product knowledge AI agent built on [Norns](https://github.com/norns) (a durable agent orchestrator). It answers product questions by searching GitHub repos, Google Docs, and its own persistent memory, then responds with cited answers via Slack, Discord, or CLI.
+
+## Architecture
+
+```
+User Interfaces (Slack, Discord, CLI)
+        ↓
+  NornsClient (SDK)
+        ↓
+  Norns Server (orchestrator, runs separately)
+        ↓
+  Mimir Worker (this repo)
+    ├── LLM calls (Anthropic Claude)
+    └── Tool execution
+        ├── GitHub search & file reading
+        ├── Google Docs search & reading
+        └── Memory (remember/search via PostgreSQL)
+```
+
+- **`norns.Norns`** — the worker class; connects via WebSocket to Norns server, receives tasks, executes agent steps
+- **`norns.NornsClient`** — the client class; used by bots to send messages to the worker through Norns
+- The Norns SDK is an editable dependency from `../norns-sdk-python`
+
+## Key Entry Points
+
+| Command | What it runs |
+|---------|-------------|
+| `uv run mimir` | Unified: worker + Discord bot + Slack bot (if tokens configured) |
+| `uv run mimir-worker` | Worker only |
+| `uv run mimir-discord` | Discord bot only |
+| `uv run mimir-slack` | Slack bot only |
+
+## Development Setup
+
+1. Norns server must be running at `http://localhost:4001` (or set `NORNS_URL`)
+2. PostgreSQL must be available (or use `docker compose up db` for Postgres on port 5433)
+3. Copy `.env` and fill in required keys: `ANTHROPIC_API_KEY`, `NORNS_API_KEY`
+4. `uv sync` to install dependencies
+5. `uv run mimir` to start
+
+## Docker
+
+```bash
+docker compose up          # Starts Postgres + Mimir
+docker compose up db       # Postgres only (port 5433)
+```
+
+The Dockerfile copies `../norns-sdk-python` into the build context, so the SDK must exist at that path.
+
+## Environment Variables
+
+Required: `ANTHROPIC_API_KEY`, `NORNS_API_KEY`
+Optional (enable features): `DISCORD_BOT_TOKEN`, `SLACK_BOT_TOKEN` + `SLACK_APP_TOKEN`, `GITHUB_TOKEN` + `GITHUB_REPOS`, `GOOGLE_CREDENTIALS_PATH` + `GOOGLE_DOC_IDS`, `DATABASE_URL`
+
+## Code Conventions
+
+- Package manager: `uv` (not pip). Use `uv sync`, `uv run`, `uv add`.
+- Build system: hatchling
+- Tools are decorated with `@tool` from the Norns SDK. Memory tools use `side_effect=True`.
+- Google Docs and GitHub tools truncate content at 8000 bytes.
+- Database uses raw psycopg2 with a global connection (no ORM).
+- Slack bot runs in a background thread (Bolt's threading model); Discord and worker run as asyncio tasks.
