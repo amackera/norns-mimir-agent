@@ -58,6 +58,28 @@ The Dockerfile copies `../norns-sdk-python` into the build context, so the SDK m
 Required: `ANTHROPIC_API_KEY`, `NORNS_API_KEY`
 Optional (enable features): `DISCORD_BOT_TOKEN`, `SLACK_BOT_TOKEN` + `SLACK_APP_TOKEN`, `GITHUB_TOKEN` + `GITHUB_REPOS`, `GOOGLE_CREDENTIALS_PATH` + `GOOGLE_DOC_IDS`, `DATABASE_URL`
 
+## Debugging with nornsctl
+
+`nornsctl` is a CLI for inspecting the Norns runtime. Use it to check agent state, inspect runs, and view event logs when debugging issues.
+
+```bash
+nornsctl agents list                          # List all agents
+nornsctl agents show <id>                     # Agent details
+nornsctl agents status <id>                   # Live process state (idle, running, awaiting_llm, etc.)
+nornsctl runs list [--agent <id>] [--limit N] # List runs
+nornsctl runs show <id>                       # Run details + failure inspector
+nornsctl runs events <id> [--json]            # Full event log for a run
+nornsctl runs retry <id>                      # Retry a failed run
+nornsctl conversations list <agent_id>        # List conversations
+nornsctl conversations show <agent_id> <key>  # Conversation details
+```
+
+Configuration is via environment (already set up in `.envrc`):
+- `NORNS_URL` — API base URL
+- `NORNS_API_KEY` — bearer token
+
+When debugging a failing run, start with `nornsctl runs show <id>` to check the failure inspector, then `nornsctl runs events <id> --json` to see the full event log.
+
 ## Code Conventions
 
 - Package manager: `uv` (not pip). Use `uv sync`, `uv run`, `uv add`.
