@@ -1,5 +1,9 @@
 import os
 
+from dotenv import load_dotenv
+
+load_dotenv()
+
 # Norns
 NORNS_URL = os.environ.get("NORNS_URL", "http://localhost:4001")
 NORNS_API_KEY = os.environ.get("NORNS_API_KEY", "")

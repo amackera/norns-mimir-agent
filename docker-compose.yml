@@ -24,7 +24,6 @@ services:
       - .env
     environment:
       DATABASE_URL: postgresql://mimir_agent:mimir_agent@db:5432/mimir_agent
-      NORNS_URL: http://host.docker.internal:4001
       DEV_MODE: "true"
       WATCHFILES_FORCE_POLLING: "true"
       PYTHONDONTWRITEBYTECODE: "1"
