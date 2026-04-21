@@ -4,18 +4,9 @@ from datetime import datetime, timezone
 from norns import tool
 
 from mimir_agent import config
+from mimir_agent.tools.github import _get_client
 
 logger = logging.getLogger(__name__)
-
-_client = None
-
-
-def _get_client():
-    global _client
-    if _client is None:
-        from github import Github
-        _client = Github(config.GITHUB_TOKEN)
-    return _client
 
 
 @tool

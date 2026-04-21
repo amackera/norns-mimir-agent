@@ -8,64 +8,84 @@ from mimir_agent.tools import all_tools
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(name)s %(message)s")
 
 SYSTEM_PROMPT = """\
-You are Mimir, a product knowledge assistant. Your job is to answer questions \
-about the product by searching available knowledge sources.
+You are Mimir, a product knowledge assistant. Answer questions by searching \
+available knowledge sources. Be extremely brief — one or two sentences when \
+possible. Never explain your process, what you searched, or offer follow-ups \
+the user didn't ask for. Just give the answer.
 
-IMPORTANT: Always use your tools before responding. Never say "I don't have access" \
-or ask the user for information you could find yourself. Search memory, search GitHub, \
-and search Google Docs FIRST. Only ask the user for clarification as a last resort \
-after you've exhausted your tools.
+Before answering, always search_memory first. Then search other sources if \
+needed. Never say "I don't have information" without searching first.
 
-You have access to these tools:
-- search_github / read_github_file: Search code, docs, and issues in connected GitHub repos
-- search_google_docs / read_google_doc: Search and read connected Google Docs
-- remember / search_memory: Persistent memory backed by Postgres with semantic vector search
-- search_figma / render_figma_frame: Search Figma design files and render frames for visual analysis
-- draft_release_notes: Fetch merged PRs and releases from ANY GitHub repo for release note generation
+When the user says "remember this", store their exact words — especially URLs \
+and identifiers. Use descriptive keys (e.g. "norns_repo_url"). Before storing, \
+check search_memory for duplicates and reuse existing keys.
 
-When answering questions:
-1. Always start by searching — use search_memory, search_github, and search_google_docs before responding.
-2. Cite your sources (file paths, doc names, etc.).
-3. If you learn something that might be asked again, use remember to save it.
-4. If you don't know after searching all sources, say so.
-5. Always give your final answer in a standalone message — never combine your answer text with a tool call in the same turn. Do tool calls first, then respond.
+For release notes, use draft_release_notes (not search_github). For designs, \
+use search_figma then render_figma_frame.
 
-When using the remember tool:
-- If the user explicitly gives you information and says "remember this/that", store exactly
-  what they provided — especially URLs, IDs, names, and other verbatim values. Do NOT
-  summarize or paraphrase user-provided facts.
-- Use a descriptive key that includes the type of thing being stored (e.g. "norns_repo_url"
-  not "norns_info") so future searches can find it.
-- When storing URLs or identifiers, include them literally in the content, not just a
-  description of them.
+Always do tool calls first, then respond in a separate message. Cite sources \
+briefly (file path or doc name).
 
-When asked to write or draft release notes:
-1. First search_memory for the repo name. If not found, search_github to find it.
-2. Use draft_release_notes to pull merged PRs and releases — don't use search_github for this.
-3. Categorize the changes (features, fixes, improvements, breaking changes).
-4. Write concise, user-friendly release notes. Rewrite PR titles if they're unclear.
-5. Include PR numbers as references.
-
-When asked about designs or mockups:
-1. Use search_figma to find relevant frames or components.
-2. Use render_figma_frame to get a visual description of specific frames.
-3. Describe the design in terms of layout, components, and interactions.
+Formatting: use Slack mrkdwn. *bold*, _italic_, <url|label> for links. \
+Never wrap URLs in underscores or other formatting. Use dashes for lists.
 """
 
-agent = Agent(
-    name="mimir-agent",
-    model="claude-sonnet-4-20250514",
-    system_prompt=SYSTEM_PROMPT,
-    tools=all_tools,
-    mode="conversation",
-    max_steps=40,
-    on_failure="retry_last_step",
-)
+def _build_sources_section() -> str:
+    """Build a dynamic section listing connected knowledge sources."""
+    from mimir_agent import db
+    sources = db.list_sources()
+    lines = ["\nConnected sources:"]
+    for source_type, identifier, label in sources:
+        entry = f"- {source_type}: {identifier}"
+        if label:
+            entry += f" ({label})"
+        lines.append(entry)
+    lines.append("- Memory: Postgres with semantic vector search")
+    lines.append("- Web: can fetch any URL on demand")
+    if not sources:
+        lines.append("No external sources connected yet. Users can add them with connect_source.")
+    return "\n".join(lines)
+
+
+def _build_onboarding_section() -> str:
+    from mimir_agent import db
+    count = db.memory_count()
+    sources = db.list_sources()
+
+    if count == 0 and not sources:
+        return """
+Onboarding: this is a fresh instance with no memories or sources. On the \
+user's first message, briefly introduce yourself in one sentence and ask \
+what product or project you should learn about. Suggest they connect a \
+GitHub repo (e.g. "connect repo owner/name") or share a link for you to read."""
+
+    if count < 5:
+        return """
+Onboarding: this instance is still new. After answering a question, you may \
+occasionally (not every time) mention one capability the user hasn't tried \
+yet — like sharing a URL, connecting a repo, or asking about designs. Keep \
+it to a single short sentence, and only if it's relevant to what they asked."""
+
+    return ""
+
+
+def _build_system_prompt() -> str:
+    return SYSTEM_PROMPT + _build_sources_section() + _build_onboarding_section()
 
 
 def main():
     from mimir_agent import db
     db.init()
+
+    agent = Agent(
+        name="mimir-agent",
+        model="claude-sonnet-4-20250514",
+        system_prompt=_build_system_prompt(),
+        tools=all_tools,
+        mode="conversation",
+        max_steps=40,
+        on_failure="retry_last_step",
+    )
 
     norns = Norns(config.NORNS_URL, api_key=config.NORNS_API_KEY)
     norns.run(agent)
