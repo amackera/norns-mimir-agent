@@ -6,11 +6,25 @@ from github import GithubException
 
 
 class TestSearchGithub:
-    def test_no_token(self, monkeypatch):
+    def test_works_without_token(self, monkeypatch):
+        """Unauthenticated access is allowed for public repos."""
         monkeypatch.setattr("mimir_agent.config.GITHUB_TOKEN", "")
-        from mimir_agent.tools.github import search_github
-        result = search_github.handler("test query")
-        assert "not configured" in result
+
+        mock_github = MagicMock()
+        mock_github.search_code.return_value = []
+        mock_github.search_issues.return_value = []
+
+        with (
+            patch("mimir_agent.tools.github.Github", return_value=mock_github) as mock_class,
+            patch("mimir_agent.tools.github.db") as mock_db,
+        ):
+            mock_db.get_github_repos.return_value = ["nornscode/norns"]
+            from mimir_agent.tools.github import search_github
+            result = search_github.handler("test query")
+
+        # Github was instantiated without a token argument
+        mock_class.assert_called_with()
+        assert "not configured" not in result
 
     def test_no_repos(self, monkeypatch):
         monkeypatch.setattr("mimir_agent.config.GITHUB_TOKEN", "fake-token")

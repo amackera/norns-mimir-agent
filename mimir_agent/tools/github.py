@@ -6,9 +6,9 @@ from mimir_agent import config, db
 
 
 def _get_client() -> Github:
-    if not config.GITHUB_TOKEN:
-        raise ValueError("GitHub integration is not configured (GITHUB_TOKEN missing)")
-    return Github(config.GITHUB_TOKEN)
+    # Public repos work unauthenticated (60 req/hr per IP). Use the token
+    # when set for private repos or the ~5000 req/hr authenticated limit.
+    return Github(config.GITHUB_TOKEN) if config.GITHUB_TOKEN else Github()
 
 
 def _resolve_repo(repo: str):
