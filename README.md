@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="docs/mimir-avatar.png" alt="Mimir" width="160" />
+</p>
+
 # Mimir
 
 A product-knowledge bot for Slack. Mimir answers questions about your project by searching connected GitHub repos and web pages, with persistent memory across restarts. Built on [Norns](https://github.com/nornscode/norns), the durable agent runtime.
